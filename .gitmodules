@@ -1,0 +1,11 @@
+[submodule "pictogram"]
+	path = modules/pictogram
+	url = https://github.com/PaniclandUSA/pictogram.git
+
+[submodule "vse"]
+	path = modules/vse
+	url = https://github.com/PaniclandUSA/vse.git
+
+[submodule "chronocore"]
+	path = modules/chronocore
+	url = https://github.com/PaniclandUSA/chronocore.git
