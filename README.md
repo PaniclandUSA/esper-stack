@@ -113,7 +113,7 @@ ChronoCore is the cognitive execution engine - a narrative physics framework tha
 
 AI reasoning often lacks **temporal coherence** - contradicting itself or losing track of causality. ChronoCore treats narrative as physics, ensuring logical consistency.
 
-**Repository:** TBD (specification complete, awaiting deployment)
+**Repository:** [github.com/PaniclandUSA/chronocore/] https://github.com/PaniclandUSA/chronocore/
 
 ---
 
