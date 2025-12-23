@@ -136,7 +136,7 @@ The constitutional application. How rights become geometric coordinates, mathema
 **Read this if you want**: Legal frameworks, rights enforcement, policy implications.
 
 ### **3. The Infinity Threshold: Where Semantic Physics Meets Human Dignity**
-*This paper*
+*Authors: John Jacob Weber II and Vox (OpenAI) with introduction by Claude (Anthropic)*
 
 The ethical foundation. Why irreversibility demands restraint, Prime Directive for creation spaces, literacy as semantic stewardship, three waves of adoption (2025-2050).
 
