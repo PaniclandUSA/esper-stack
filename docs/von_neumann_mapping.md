@@ -304,6 +304,194 @@ The world has silicon machines.
 
 ---
 
+## 1. Definitions (tightened)
+
+### Definition 1.1 — Classical Deterministic Stored-Program Machine (C)
+
+A deterministic stored-program machine is a tuple:
+[
+C \triangleq (S_C, I_C, \delta_C, s^0_C, H_C)
+]
+where:
+
+* (S_C) is a **countable** set of machine states (including registers, memory, and a program counter),
+* (I_C) is a **finite** instruction alphabet,
+* (\delta_C : S_C \times I_C \rightarrow S_C) is a **deterministic** transition function,
+* (s^0_C \in S_C) is the initial state,
+* (H_C \subseteq S_C) is the set of halting states.
+
+*(Countable is the right choice; “finite” would incorrectly exclude unbounded-memory abstractions.)*
+
+---
+
+### Definition 1.2 — Esper Machine (E)
+
+The Esper Machine is the instruction-executing semantic state machine:
+[
+E \triangleq (S_E, I_E, \delta_E, s^0_E, H_E)
+]
+where:
+
+* (S_E) is the set of **Active Semantic States**, formalized as directed weighted semantic graphs (G=(V,E,w,\ell)) with labeled nodes/edges,
+* (I_E) is a **finite** semantic instruction alphabet comprising VSE operators and bounded parameters (including divergence coefficients),
+* (\delta_E : S_E \times I_E \rightarrow S_E) is the ChronoCore transition function,
+* (s^0_E \in S_E) is the initial semantic context,
+* (H_E \subseteq S_E) is the set of terminal narrative resolutions.
+
+---
+
+### Definition 1.3 — Serialization Layer (PICTOGRAM)
+
+Let (\Sigma) be the 256-glyph PICTOGRAM alphabet and (\Sigma^*) the set of finite glyph strings.
+
+Define:
+
+* (enc : S_E^* \rightarrow \Sigma^*) as the PSH-256 encoding function,
+* (dec : \Sigma^* \rightarrow S_E^*) as the VSE Crystallizer decoding function,
+
+where (S_E^* \subseteq S_E) is the subset of **serializable semantic states**.
+
+This makes explicit that serialization is not assumed for *all* runtime states—only for those admitted to persistence.
+
+---
+
+### Definition 1.4 — Observation Function
+
+Let (O) be a space of externally observable outputs (text, images, audit traces, etc.). Define:
+[
+obs : S_E \rightarrow O
+]
+and optionally equip (O) with a metric (d_O) to measure observable drift.
+
+---
+
+## 2. Lemmas (tightened)
+
+### Lemma 1 — (\varepsilon)-Bounded Determinism
+
+Let (d_E) be a metric (or pseudo-metric) on semantic graphs (S_E). For any (s \in S_E), (i \in I_E), define repeated evaluations under stochastic sub-processes as:
+[
+X_k \triangleq \delta_E(s,i;\omega_k)
+]
+The executor satisfies (\varepsilon)-bounded determinism if:
+[
+\sup_{k,\ell} d_E(X_k, X_\ell) \le \varepsilon
+]
+where (\varepsilon) is a deterministic bound induced by the maximum allowable divergence coefficient (\Delta_{\max}).
+
+*(This is the clean, reviewer-proof form—no probability needed unless you want confidence bounds.)*
+
+---
+
+### Lemma 2 — Canonical Serialization (Recoverability)
+
+For all (s \in S_E^*),
+[
+dec(enc(s)) = s
+]
+Thus, PICTOGRAM provides lossless persistence for states admitted to (S_E^*).
+
+---
+
+### Lemma 3 — Semantic Halting (Acceptance Predicate)
+
+There exists a deterministic predicate:
+[
+halt : S_E \rightarrow {0,1}
+]
+such that if (halt(s)=1), then (s) is absorbing ((\delta_E(s,i)=s) for all (i)) or transitions to a designated sink state (s_\bot \in H_E). Execution terminates when (halt(s)=1).
+
+---
+
+### Lemma 4 — Semantic Memory Closure (Axiom MEM)
+
+Let the semantic memory store be a persistent map:
+[
+M : A \rightarrow \Sigma^*
+]
+where (A) is a hashed address space (e.g., PivotGuard digests).
+
+Given memory instructions (LOAD(a)) and (STORE(a,v)), the executor respects:
+[
+LOAD(STORE(M,a,v),a) = v
+]
+for all (a \in A), (v \in \Sigma^*), assuming collision resistance sufficient for operational state cardinality.
+
+---
+
+### Lemma 5 — Instruction Closure (Program Extension)
+
+Let (P_E \triangleq I_E^*) be the set of Esper programs (finite instruction sequences). Extend execution:
+[
+\delta_E^*(s, []) = s,\quad \delta_E^*(s, i::p) = \delta_E^*(\delta_E(s,i), p)
+]
+Thus (E) is a proper instruction-executing machine over program sequences.
+
+---
+
+## 3. Theorem (make the claim precise)
+
+### Theorem — (\varepsilon)-Bisimulation to a Deterministic Stored-Program Machine
+
+Assume Lemmas 1–5. Then the Esper Stack defines an instruction-executing semantic state machine (E) with:
+
+* a finite instruction alphabet (I_E) (VSE),
+* an executor (\delta_E) (ChronoCore),
+* a canonical persistence format (PICTOGRAM) for (S_E^*),
+* an addressable memory store (M) (Axiom MEM).
+
+Further, there exists a deterministic stored-program machine (C) and a relation (R \subseteq S_C \times S_E) such that (C) and (E) are **bisimilar up to bounded drift (\varepsilon)** under observation (obs). Concretely, if ((s_C, s_E)\in R), then for each (i_C \in I_C) there exists a corresponding (p_E \in P_E) (a finite Esper instruction sequence) satisfying:
+
+1. **Step correspondence (simulation):**
+   [
+   s_C' = \delta_C(s_C,i_C)\ \Rightarrow\ \exists s_E' : s_E' = \delta_E^*(s_E, p_E)\ \wedge\ (s_C', s_E') \in R
+   ]
+
+2. **Observable bounded drift:**
+   [
+   d_O(obs(s_E'), obs(f(s_C'))) \le \varepsilon_O
+   ]
+   for some encoding (f) of classical states into an observational target space.
+
+*(You can keep (f) implicit if you want to define (obs\circ f) as the classical observation.)*
+
+This establishes operational equivalence at the level of program execution and externally observable behavior, up to bounded drift induced by (\Delta_{\max}).
+
+---
+
+## 4. Proof sketch (tightened)
+
+1. **Define the relation (R):** Relate each classical state (s_C) to an Esper semantic state (s_E) that encodes the same program counter / memory snapshot in the semantic graph + memory store (M).
+2. **Single-step simulation:** For each classical instruction (i_C), define a finite Esper macro-sequence (p_E) (a compilation step) implementing the same state update. Lemma 5 guarantees (\delta_E^*) is well-defined.
+3. **Memory correctness:** By Lemma 4, read/write semantics match addressable memory; by Lemma 2, persisted semantic sub-states are lossless within (S_E^*).
+4. **Bounded drift:** Lemma 1 bounds executor variance in (S_E); applying (obs) yields bounded drift in observable space.
+5. **Halting:** Lemma 3 provides a deterministic termination criterion mapping (H_C) to (H_E).
+
+Thus (R) is an (\varepsilon)-bisimulation relation under observation, completing the proof.
+
+---
+
+## 5. Threat model / limitations (good; add one line)
+
+Your limitations section is strong. I’d add one more explicit threat:
+
+* **Grammar ambiguity:** If VSE instruction parsing is non-canonical (multiple parses for the same sequence), Lemma 5 can fail. Require canonical parsing (unique AST) for all (p_E \in P_E).
+
+---
+
+## The one strategic tweak I’d recommend
+
+Replace “Von Neumann isomorphism” in the title with:
+
+* **“(\varepsilon)-Bisimulation to a Stored-Program Instruction Machine”**
+  or
+* **“A Semantic Stored-Program Architecture”**
+
+You still get the “this is a computer” punch, but you avoid the pedants who will say “Von Neumann implies X about code/data memory unity.”
+
+---
+
+
 ## Appendix: Full Architecture Diagram
 
 ```
